@@ -4,19 +4,18 @@ const debug2On = false;
 //-----------------------------------------------------VAUX
 
 export function handleVauxLogTypes(text, audioInputNames, audioOutputNames) {
-    if (debug1On) { console.log(`Handle Vaux Logs Called: ${text}`); }
     switch (true) {
         case text.includes("Output Settings\\Source Select"):
-            return handleVauxSourceSelectCommandLogs(text, audioInputNames, audioOutputNames);
+            return handleVauxSourceSelectCommands(text, audioInputNames, audioOutputNames);
         case text.includes("Output Settings\\Output Mute") || text.includes("Output Settings\\Volume") : 
-            return handleVauxVolumeCommandLogs(text, audioOutputNames);
+            return handleVauxVolumeCommands(text, audioOutputNames);
         default:
             return text; 
     }
 }
 
-export function handleVauxVolumeCommandLogs(text, audioZoneOutputMap) {
-    if (debug1On) { console.log(`Handle Vaux Volume Command Logs Called: ${text}`); }
+function handleVauxVolumeCommands(text, audioZoneOutputMap) {
+    if (debug1On) { console.log(`📢 handleVauxVolumeCommands called: ${text}`); }
     // Match command, optional extra text, and output index
     let match = text.match(/Output Settings\\(.+?)\(([^,\d]+)?,?\s*(\d+)\)/);
     if (!match) {
@@ -33,14 +32,12 @@ export function handleVauxVolumeCommandLogs(text, audioZoneOutputMap) {
 
     // Format the final output
     let result = `Driver Command: '${outputName} ${command}${extraText ? " " + extraText : ""} (Vaux Lattis Matrix)'`;
-
-    if (debug2On) { console.log(`✅ Cleaned Vaux Log: ${result}`); }
-
+    if (debug2On) { console.log(`✅ ${result}`); }
     return result;
 }
 
-export function handleVauxSourceSelectCommandLogs(text, audioInputNames, audioOutputNames) {
-    if (debug1On) { console.log(`Handle Vaux Source Select Logs Called: ${text}`); }
+function handleVauxSourceSelectCommands(text, audioInputNames, audioOutputNames) {
+    if (debug1On) { console.log(`📢 handleVauxSourceSelectCommands called: ${text}`); }
 
     // Match Source Select command with input and output index
     let match = text.match(/Output Settings\\Source Select\(.*?, (\d+), (\d+)\)/);
@@ -57,9 +54,7 @@ export function handleVauxSourceSelectCommandLogs(text, audioInputNames, audioOu
     let outputName = audioOutputNames[outputIndex];  // Maps Output Index → Output Name
 
     // Format the final output
-    let result = `Driver Command: '${inputName} selected in ${outputName} (Vaux Lattis Matrix'`;
-
+    let result = `Driver Command: '${inputName} selected in ${outputName} (Vaux Lattis Matrix)'`;
     if (debug2On) { console.log(`✅ ${result}`); }
-
     return result;
 }
