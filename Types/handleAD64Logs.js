@@ -1,5 +1,5 @@
-const debug1On = true;
-const debug2On = true;
+const debug1On = false;
+const debug2On = false;
 
 export function handleAD64LogTypes(text) {
     switch (true) {

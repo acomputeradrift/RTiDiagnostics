@@ -3,30 +3,31 @@
 import fs from 'fs';
 import xlsx from 'xlsx';
 import { handleSystemManagerLogTypes } from "./Types/handleSystemManagerLogs.js";
+import { handleDiagnosticLogTypes } from "./Types/handleDiagnosticLogs.js";
 import { handlePortLogTypes } from "./Types/handlePortLogs.js";
 import { handleVauxLogTypes } from "./Types/handleVauxLogs.js";
 import { handleLutronCasetaLogTypes } from "./Types/handleLutronCastetaLogs.js";
+import { handleVantageLogTypes} from "./Types/handleVantageLogs.js"
 import { handleLayerSwitchLogs } from "./Types/handleLayerSwitchLogs.js";
 import { handleCBUSLogTypes } from "./Types/handleCBUSLogs.js";
 import { handleAD64LogTypes } from "./Types/handleAD64Logs.js";
+import { handleCoolMasterNetLogTypes} from "./Types/handleCoolMasterNetLogs.js"
 
-//const spreadsheetPath = './Projects/McGuigan/Mapping Data/RTI Diagnostics Feed Info - McGuigan.xlsx';
-const spreadsheetPath = './Projects/Sung/Mapping Data/RTI Diagnostics Feed Info - Sung.xlsx';
-//const logFilePath = "./Projects/McGuigan/Raw Logs/SystemLog - McGuigan.txt";
-const logFilePath = "./Projects/Sung/Raw Logs/SystemLog - Sung.txt";
+const spreadsheetPath = './Projects/McGuigan/Mapping Data/RTI Diagnostics Feed Info - McGuigan.xlsx';
+//const spreadsheetPath = './Projects/Sung/Mapping Data/RTI Diagnostics Feed Info - Sung.xlsx';
+const logFilePath = "./Projects/McGuigan/Raw Logs/SystemLog - McGuigan 2.txt";
+//const logFilePath = "./Projects/Sung/Raw Logs/SystemLog - Sung.txt";
 const htmlOutputPath = './Output/filtered_log_v3.html';
 // Mapping of expected CSV replacements to their corresponding spreadsheet sheets
 const sheetMappings = {
-    loadNames: "Lighting Loads",   // Replaces groupNames.csv
-    sourceNames: "Source List",     // Replaces sourceList.csv
-    pageNames: "Page List",         // Replaces pageList.csv
-    relayNames: "RCM12 List",    // Replaces rcm12List.csv
+    loadNames: "Lighting Loads",   
+    sourceNames: "Source List",     
+    pageNames: "Page List",         
     portNames: "Ports List",
-    audioZoneNames: "Audio Zones"    // Replaces audioZoneList.csv
+    audioZoneNames: "Audio Zones"  
 };
 
 //--------------------------------------Load group name mappings from the spreadsheet
-
 function loadLightingLoadList() {
     console.log(`Loading from sheet: Lighting Loads`);
     const workbook = xlsx.readFile(spreadsheetPath);
@@ -35,21 +36,26 @@ function loadLightingLoadList() {
         console.log("⚠️ Lighting Loads Sheet not Found");
         return; // Exit the function gracefully
     }
+
     const rows = xlsx.utils.sheet_to_json(sheet, { raw: false });
     const loadMap = {};
+
     rows.forEach(row => {
         let loadIndex = row['Load Index']?.trim();
         let loadRoom = row['Load Room']?.trim();
         let loadName = row['Load Name']?.trim();
 
         // Ensure required fields have default values if missing
-        if (!loadRoom) loadRoom = "[Missing Mapped Room Name]";
-        if (!loadName) loadName = "[Missing Mapped Load Name]";
+        if (!loadName) loadName = "(Missing Mapped Load Name)";
+
+        // Format mapping based on presence of Load Room
+        let mappedValue = loadRoom ? `${loadRoom} - ${loadName}` : loadName;
 
         if (loadIndex) {
-            loadMap[loadIndex] = `${loadRoom} - ${loadName}`;
+            loadMap[loadIndex] = mappedValue;
         }
     });
+
     console.log("✅ Lighting Loads mapped.");
     return loadMap;
 }
@@ -70,7 +76,7 @@ function loadButtonList() {
         let buttonName = row['Button Name']?.trim();
 
         // Ensure required fields have default values if missing
-        if (!buttonName) buttonName = "[Missing Mapped Button Name]";
+        if (!buttonName) buttonName = "(Missing Mapped Button Name)";
 
         if (buttonIndex) {
             buttonMap[buttonIndex] = buttonName;
@@ -96,7 +102,7 @@ function loadTaskList() {
         let taskIndex = row['Task Index']?.trim();
         let taskName = row['Task Name']?.trim();
         // Ensure required fields have default values if missing
-        if (!taskName) taskName = "[Missing Mapped Task Name]";
+        if (!taskName) taskName = "(Missing Mapped Task Name)";
         if (taskIndex) {
             taskNames[taskIndex] = taskName;
         }
@@ -117,7 +123,7 @@ function loadSourceList() {
     const sourceMap = {};
     rows.forEach(row => {
         const index = row['Source Index']?.trim();
-        const sourceName = row['Source Name']?.trim();
+        let sourceName = row['Source Name']?.trim();
         if (!sourceName) sourceName = "[Missing Mapped Source Name]";
         if (index) {
             sourceMap[index] = sourceName;
@@ -142,9 +148,9 @@ function loadPageList() {
     const pageMap = {};
 
     rows.forEach(row => {
-        const pageIndex = row['Page Index']?.trim();
-        const pageName = row['Page Name']?.trim();
-
+        const pageIndex = row['Page Index']?.trim(); 
+        let pageName = row['Page Name']?.trim();
+        if (!pageName) pageName = "(Missing Mapped Page Name)";
         if (pageIndex) {
             pageMap[pageIndex] = pageName;
         }
@@ -167,10 +173,10 @@ function loadPortList() {
     const portMap = {};
 
     rows.forEach(row => {
-        const moduleName = row['Module Name']?.trim() || "[Missing Mapped Module Name]";
-        const moduleType = row['Module Type']?.trim() || "[Missing Mapped Module Type]";
+        const moduleName = row['Module Name']?.trim() || "(Missing Mapped Module Name)";
+        const moduleType = row['Module Type']?.trim() || "(Missing Mapped Module Type)";
         const portIndex = row['Port Index']?.trim();
-        const portName = row['Port Name']?.trim() || "[Missing Mapped Port Name]";
+        const portName = row['Port Name']?.trim() || "(Missing Mapped Port Name)";
 
         if (portIndex) {
             const key = `${moduleName}_${moduleType}_${portIndex}`;
@@ -197,9 +203,9 @@ function loadAudioZoneList() {
 
     rows.forEach(row => {
         const inputIndex = row['Audio Zone Input Index']?.trim();
-        const inputName = row['Audio Zone Input Name']?.trim()  || "[Missing Audio Input Name]";
+        const inputName = row['Audio Zone Input Name']?.trim()  || "(Missing Audio Input Name)";
         const outputIndex = row['Audio Zone Output Index']?.trim();
-        const outputName = row['Audio Zone Output Name']?.trim() || "[Missing Audio Output Name]";
+        const outputName = row['Audio Zone Output Name']?.trim() || "(Missing Audio Output Name)";
 
         // Store Input Name
         if (inputIndex) {
@@ -257,6 +263,8 @@ function processLogEntry(text) {
         case text.includes('System Manager') || text.startsWith('Change to page'):
             //console.log('Filtered by System Manager ->');
             return handleSystemManagerLogTypes(text, sourceNames, pageNames);
+        case text.includes('Diagnostics'):
+            return handleDiagnosticLogTypes(text);
         case text.includes('Layer Switch'):
             //console.log('Filtered by Layer Switch ->');
             return handleLayerSwitchLogs(text);
@@ -273,9 +281,11 @@ function processLogEntry(text) {
             return handleVauxLogTypes(text, audioInputNames, audioOutputNames);
         case text.includes('Vantage InFusion'):
             //console.log('Filtered by Vantage InFusion ->');
-            return handleVantageLogTypes(text, loadNames, buttonName, taskNames);
+            return handleVantageLogTypes(text, loadNames, buttonNames, taskNames);
         case text.includes('AD-64'):
             return handleAD64LogTypes(text);
+        case text.includes('CoolMasterNet'):
+            return handleCoolMasterNetLogTypes(text);
         default:
             //console.log(`Unfiltered log type... ${text}`);
             return text; // Unhandled log type
