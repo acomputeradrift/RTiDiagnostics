@@ -24,7 +24,9 @@ function handleCBUSDriverEvent(text, loadNames) {
             let loadName = loadNames[loadIndex] || `Group ${loadIndex}`;
             let result = `Driver Event: 'When ${loadName} ${state} happens (Clipsal C-Bus)'`;
             if (debug2On) { console.log(`✅ ${result}`); }
+            return result;
         default:
+            if (debug2On) { console.log(`⚠️  App Mismatch: ${text}`); };
             return text; // Unhandled App category
     }
 }
@@ -41,8 +43,10 @@ function handleCBUSDriverCommand(text, loadNames) {
             let state = stateNum === "1" ? "Off" : "On";
             let groupName = loadNames[groupId] || `Group ${groupId}`;
             let result = `Driver Command: '${groupName} ${state} (Clipsal C-Bus)'`;
-            if (debug2On) { console.log(`✅ ${result}`); }
+            if (debug2On) { console.log(`✅ ${result}`); };
+            return result;
         default:
+            if (debug2On) { console.log(`⚠️  App Mismatch: ${text}`); };
             return text; // Unhandled category
     }
 }
