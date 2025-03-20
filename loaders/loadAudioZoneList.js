@@ -1,19 +1,18 @@
 export function loadAudioZoneList(sheets) {
-    console.log(`Loading data from sheet: Audio Zone List`);
-    if (!sheets["Audio Zone List"]) {
-        console.log("⚠️  Audio Zone List Sheet not Found");
-        return {}; // Return empty object if missing
+    console.log(`Loading data from sheet: Audio Zones`);
+    if (!sheets["Audio Zones"]) {
+        console.log("⚠️  Audio Zones Sheet not Found");
+        return { inputMap: {}, outputMap: {} };  // ✅ Ensures a valid return structure
     }
 
-    const rows = xlsx.utils.sheet_to_json(sheets, { raw: false });
     const audioZoneInputMap = {};  // Maps Input Index -> Input Name
     const audioZoneOutputMap = {}; // Maps Output Index -> Output Name
 
-    sheets["Audio Zone List"].forEach(row => {
+    sheets["Audio Zones"].forEach(row => {
         const inputIndex = row['Audio Zone Input Index']?.trim();
-        const inputName = row['Audio Zone Input Name']?.trim()  || "(Missing Audio Input Name)";
+        const inputName = row['Audio Zone Input Name']?.trim()  || `(Empty Audio Input Name [${inputIndex}])`;
         const outputIndex = row['Audio Zone Output Index']?.trim();
-        const outputName = row['Audio Zone Output Name']?.trim() || "(Missing Audio Output Name)";
+        const outputName = row['Audio Zone Output Name']?.trim() || `(Emprty Audio Output Name [${outputIndex}])`;
 
         // Store Input Name
         if (inputIndex) {

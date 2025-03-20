@@ -17,6 +17,6 @@ export function loadSpreadsheet() {
         return sheets;
     } catch (error) {
         console.error("❌ Error loading spreadsheet:", error);
-        return {};
+        return;
     }
 }
